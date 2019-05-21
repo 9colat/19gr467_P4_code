@@ -1,6 +1,7 @@
 function DOAPlot(DOA_TOP,DOA_SIDE)
 % Visualisation from the top veiw
-figure('Name','Top View of Estimate','NumberTitle','off');
+figure('Name','Estimate of the DOA','NumberTitle','off','Position', [1 1 550 900]);
+subplot(2,1,1)
 hold on
 % Unite cirkel
 r = 1;
@@ -92,7 +93,8 @@ end
 hold off
 
 % Visualisation from the side veiw
-figure('Name','Side View of Estimate','NumberTitle','off');
+%figure('Name','Side View of Estimate','NumberTitle','off');
+subplot(2,1,2)
 hold on
 % Unit circel
 r = 1;
