@@ -1,10 +1,11 @@
+tic
 if exist('fs','var')==0
 load('compdata.mat')
 end
 close all
 %clc;
 speed=340;
-tic
+
 micPos = [  0.0420    0.0615   -0.0410;  % mic 1
            -0.0420    0.0615    0.0410;  % mic 2
            -0.0615    0.0420   -0.0410;  % mic 3
@@ -33,7 +34,8 @@ rx = phased.ConformalArray( ...
  %    'ShowNormals', true, ...
  %    'ShowIndex', 1:8 ...
  %)
- lowfs = 44100/8;
+ factor = 15;
+ lowfs = 44100/factor;
 doa = phased.GCCEstimator( 'SensorArray', rx, 'SampleRate', lowfs, 'PropagationSpeed', speed );
 
 Fstop1 = 200;         % First Stopband Frequency
@@ -52,20 +54,22 @@ Q = design(h, 'ellip', 'MatchExactly', match);
 
 g=10000;
 file=1;
+%asd=size(dev_static_speech.wav{3},1);
 wav=dev_static_speech.wav{file};
 L=size(wav,1);
 le=fs*0.2;
 %for j=1:floor(L/le)
 s=(j-1)*le+1;
 e=le*j;
-sig=wav(:,:)+data(L+1:2*L,:).*0.1;
-
+con=snr(wav(:,1),data(L+1:2*L,1));
+sner=0;
+sig=wav(:,:)+data(L+1:2*L,:).*1/10^((-con+sner)/20);
+%sig=data(L+1:2*L,:);
 nois=zeros(L,8);
-
 toc
 
 tic
-sig_down = downsample(sig,8);
+sig_down = downsample(sig,factor);
 G=size(sig_down,1);
 nois2 = zeros(G,8);
 for i=1:8
@@ -82,14 +86,10 @@ z=filter(Q,nois2);
 %spectrogram(data(:,2),kaiser(len,18),[],len,fs,'yaxis')
 %figure
 %spectrogram(z(:,1),kaiser(len,18),[],len,fs,'yaxis')
-
-
-
-
 toc
 tic
 TheLastStep = [doa( sig_down )';
-dev_static_speech.azimuth(file),dev_static_speech.elevation(file)];
+dev_static_speech.azimuth(file),dev_static_speech.elevation(file)]
 DOAPlot(TheLastStep(1,1),TheLastStep(1,2))
 toc
 %end
