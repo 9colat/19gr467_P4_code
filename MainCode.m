@@ -1,11 +1,11 @@
-tic
+%tic
 if exist('fs','var')==0
 load('compdata.mat')
 end
 close all
 %clc;
 speed=340;
-
+dyn=expander(-103,'ReleaseTime',3.01);
 micPos = [  0.0420    0.0615   -0.0410;  % mic 1
            -0.0420    0.0615    0.0410;  % mic 2
            -0.0615    0.0420   -0.0410;  % mic 3
@@ -53,7 +53,7 @@ Q = design(h, 'ellip', 'MatchExactly', match);
 
 
 g=10000;
-file=1;
+file=2;
 %asd=size(dev_static_speech.wav{3},1);
 wav=dev_static_speech.wav{file};
 L=size(wav,1);
@@ -62,34 +62,41 @@ le=fs*0.2;
 s=(j-1)*le+1;
 e=le*j;
 con=snr(wav(:,1),data(L+1:2*L,1));
-sner=0;
+sner=1;
 sig=wav(:,:)+data(L+1:2*L,:).*1/10^((-con+sner)/20);
 %sig=data(L+1:2*L,:);
 nois=zeros(L,8);
-toc
+%toc
 
-tic
+%tic
 sig_down = downsample(sig,factor);
 G=size(sig_down,1);
 nois2 = zeros(G,8);
+%tic
 for i=1:8
 nois2(:,i)=noiseReduction_YW(sig_down(:,i),lowfs);
 end
+%toc
+%tic
 %q = fir1(48,[300*2/fs 8000*2/fs]);
 z=filter(Q,nois2);
 %soundsc(z(:,1),fs)
-%len=0.02*fs;
-
+len=0.02*fs;
+%toc
 %figure
 %spectrogram(data(:,1),kaiser(len,18),[],len,fs,'yaxis')
 %figure
 %spectrogram(data(:,2),kaiser(len,18),[],len,fs,'yaxis')
 %figure
 %spectrogram(z(:,1),kaiser(len,18),[],len,fs,'yaxis')
-toc
 tic
-TheLastStep = [doa( sig_down )';
+p=dyn(z);
+toc
+spectrogram(p(:,1),kaiser(len,18),[],len,fs,'yaxis')
+%tic
+TheLastStep = [doa( p )';
 dev_static_speech.azimuth(file),dev_static_speech.elevation(file)]
 DOAPlot(TheLastStep(1,1),TheLastStep(1,2))
-toc
+%toc
+%soundsc(sig(:,1),fs)
 %end
